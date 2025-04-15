@@ -3,9 +3,21 @@ import argparse
 from pathlib import Path
 from datetime import datetime
 
-def process_video(video_path, output_frame_dir, output_contour_dir, binary_path):
+def process_video(video_path, output_base_dir):
+    """Process all frames of a video, detect contours, and save results"""
+    # Create output directory structure
+    output_base_dir = Path(output_base_dir)
+    frames_dir = output_base_dir / "frames"
+    contours_dir = output_base_dir / "contours"
+    binary_dir = output_base_dir / "binary"
+    
+    # Create directories if they don't exist
+    frames_dir.mkdir(exist_ok=True, parents=True)
+    contours_dir.mkdir(exist_ok=True, parents=True)
+    binary_dir.mkdir(exist_ok=True, parents=True)
+
     # Open the video file
-    cap = cv2.VideoCapture(str(video_path))  # Ensure string path for OpenCV
+    cap = cv2.VideoCapture(str(video_path))
     
     if not cap.isOpened():
         print("Error: Could not open video.")
@@ -14,76 +26,63 @@ def process_video(video_path, output_frame_dir, output_contour_dir, binary_path)
     # Get video information
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = cap.get(cv2.CAP_PROP_FPS)
-    print(f"Video info: {total_frames} frames, {fps:.2f} FPS")
+    print(f"Processing {total_frames} frames at {fps:.2f} FPS")
     
-    # Select frame to process (100th frame or last frame if video is shorter)
-    target_frame = min(100, total_frames - 1)
-    cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
+    frame_count = 0
+    while True:
+        # Read next frame
+        ret, frame = cap.read()
+        if not ret:
+            break
+        
+        # Create output filenames
+        frame_filename = f"frame_{frame_count:04d}.png"
+        contour_filename = f"contour_{frame_count:04d}.png"
+        binary_filename = f"binary_{frame_count:04d}.png"
+        
+        frame_path = str(frames_dir / frame_filename)
+        contour_path = str(contours_dir / contour_filename)
+        binary_path = str(binary_dir / binary_filename)
+        
+        # 1. Convert to grayscale
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        
+        # 2. Apply Gaussian blur to reduce noise
+        blurred = cv2.GaussianBlur(gray, (15, 15), 0)
+        
+        # 3. Binarize the image
+        _, binary = cv2.threshold(blurred, 200, 255, cv2.THRESH_BINARY)
+        
+        # 4. Find contours on the binary image
+        contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        # Filter out small contours
+        min_area = 100
+        significant_contours = [cnt for cnt in contours if cv2.contourArea(cnt) > min_area]
+        
+        # Draw contours on original frame
+        contour_frame = frame.copy()
+        cv2.drawContours(contour_frame, significant_contours, -1, (0, 255, 0), 2)
+        
+        # Save results
+        cv2.imwrite(frame_path, frame)
+        cv2.imwrite(contour_path, contour_frame)
+        cv2.imwrite(binary_path, binary)
+        
+        frame_count += 1
+        if frame_count % 50 == 0:  # Print progress every 50 frames
+            print(f"Processed frame {frame_count}/{total_frames}")
     
-    # Read the frame
-    ret, frame = cap.read()
-    if not ret:
-        print("Error: Could not read frame.")
-        return
-    
-    # Create output filenames
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    frame_filename = f"frame_{target_frame}_{timestamp}.png"
-    contour_filename = f"contour_{target_frame}_{timestamp}.png"
-    binary_filename = f"binary_{target_frame}_{timestamp}.png"  # For debugging
-    
-    frame_path = str(output_frame_dir / frame_filename)
-    contour_path = str(output_contour_dir / contour_filename)
-    binary_path = str(binary_path / binary_filename)  # For debugging
-    
-    # 1. Convert to grayscale
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    
-    # 2. Apply Gaussian blur to reduce noise
-    blurred = cv2.GaussianBlur(gray, (15, 15), 0)
-    
-    # 3. Binarize the image using adaptive thresholding (better for varying lighting)
-    # binary = cv2.adaptiveThreshold(blurred, 255, 
-    #                               cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-    #                               cv2.THRESH_BINARY_INV, 11, 2)
-    # try normal threshold
-    ret, thresh = cv2.threshold(blurred, 200, 255, cv2.THRESH_BINARY)
-    
-    # Save binary image for debugging
-    cv2.imwrite(binary_path, thresh)
-    
-    # 4. Find contours on the binary image
-    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
-    # Filter out small contours (adjust min_area as needed)
-    min_area = 100
-    contours = [cnt for cnt in contours if cv2.contourArea(cnt) > min_area]
-    
-    # Draw contours on original frame
-    contour_frame = frame.copy()
-    cv2.drawContours(contour_frame, contours, -1, (0, 255, 0), 2)
-    
-    # Save results
-    cv2.imwrite(frame_path, frame)
-    cv2.imwrite(contour_path, contour_frame)
-    
-    print(f"Saved frame {target_frame} to {frame_path}")
-    print(f"Saved binary image to {binary_path}")
-    print(f"Saved contour image to {contour_path}")
-    print(f"Found {len(contours)} significant contours (area > {min_area})")
+    print(f"\nProcessing complete! Saved {frame_count} frames")
+    print(f"Original frames saved to: {frames_dir}")
+    print(f"Binary images saved to: {binary_dir}")
+    print(f"Contour images saved to: {contours_dir}")
     
     cap.release()
 
 if __name__ == "__main__":
     # Configure paths
     video_path = Path("/Users/macbookpro/Desktop/aero_drone_line detection/data/video_1.avi")
-    frame_output = Path("/Users/macbookpro/Desktop/aero_drone_line detection/data/frames")
-    contour_output = Path("/Users/macbookpro/Desktop/aero_drone_line detection/data/contours")
-    binary_path = Path("/Users/macbookpro/Desktop/aero_drone_line detection/data/binary")
+    output_dir = Path("/Users/macbookpro/Desktop/aero_drone_line detection/data/processed_output")
     
-    # Create directories if needed
-    frame_output.mkdir(exist_ok=True, parents=True)
-    contour_output.mkdir(exist_ok=True, parents=True)
-    binary_path.mkdir(exist_ok=True, parents=True)
-    
-    process_video(video_path, frame_output, contour_output, binary_path)
+    process_video(video_path, output_dir)
