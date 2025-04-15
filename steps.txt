@@ -1,0 +1,13 @@
+Steps to use the canny detector
+1. Blur the image using the guassian Blur
+2. choose the two thresholds to be use
+3. apply the canny algorithm
+
+
+#=============================>
+Steps to approach the problem
+1. Load the video and convert it to frames to be saved in a certain location
+2. Take an image from the frames
+3. Apply guassian blur to the image
+4. apply the canny detector to it
+5. apply the hough transforms to it to find the lines
