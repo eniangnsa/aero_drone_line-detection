@@ -50,14 +50,20 @@ def process_video(video_path, output_base_dir):
         # 2. Apply Gaussian blur to reduce noise
         blurred = cv2.GaussianBlur(gray, (15, 15), 0)
         
+
         # 3. Binarize the image
-        _, binary = cv2.threshold(blurred, 200, 255, cv2.THRESH_BINARY)
+        _, binary = cv2.threshold(blurred, 170, 255, cv2.THRESH_BINARY)
+
+        # 3.1 Apply dilation to close small holes in white regions
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))  
+        binary = cv2.dilate(binary, kernel, iterations=3)
+
         
         # 4. Find contours on the binary image
         contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
         # Filter out small contours
-        min_area = 100
+        min_area = 1000
         significant_contours = [cnt for cnt in contours if cv2.contourArea(cnt) > min_area]
         
         # Draw contours on original frame
@@ -82,7 +88,7 @@ def process_video(video_path, output_base_dir):
 
 if __name__ == "__main__":
     # Configure paths
-    video_path = Path("/Users/macbookpro/Desktop/aero_drone_line detection/data/video_1.avi")
-    output_dir = Path("/Users/macbookpro/Desktop/aero_drone_line detection/data/processed_output")
+    video_path = Path("/Users/macbookpro/Desktop/aero_drone_line detection/data/alexey's_data/Видео_парабель.mp4")
+    output_dir = Path("/Users/macbookpro/Desktop/aero_drone_line detection/data/alexey's_data/processed")
     
     process_video(video_path, output_dir)
