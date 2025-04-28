@@ -88,7 +88,7 @@ def process_video(video_path, output_base_dir):
 
 if __name__ == "__main__":
     # Configure paths
-    video_path = Path("/Users/macbookpro/Desktop/aero_drone_line detection/data/alexey's_data/Видео_парабель.mp4")
-    output_dir = Path("/Users/macbookpro/Desktop/aero_drone_line detection/data/alexey's_data/processed")
+    video_path = Path("C:/Users/SCII1\Desktop/aero_drone_line-detection/data/Видео_парабель.mp4")
+    output_dir = Path("C:/Users/SCII1/Desktop/aero_drone_line-detection/data/processed")
     
     process_video(video_path, output_dir)
