@@ -52,7 +52,18 @@ def process_video(video_path, output_base_dir):
         
 
         # 3. Binarize the image
-        _, binary = cv2.threshold(blurred, 170, 255, cv2.THRESH_BINARY)
+        # _, binary = cv2.threshold(blurred, 200, 255, cv2.THRESH_BINARY)
+
+    #     binary = cv2.adaptiveThreshold(
+    #     blurred, 
+    #     255, 
+    #     cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+    #     cv2.THRESH_BINARY_INV, 
+    #     blockSize=91,  # Larger to ignore small glares
+    #     C=10           # Adjusts sensitivity to local variations
+    # )
+    
+        otsu_thresh, binary = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
         # 3.1 Apply dilation to close small holes in white regions
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))  
@@ -88,7 +99,7 @@ def process_video(video_path, output_base_dir):
 
 if __name__ == "__main__":
     # Configure paths
-    video_path = Path("C:/Users/SCII1\Desktop/aero_drone_line-detection/data/Видео_парабель.mp4")
-    output_dir = Path("C:/Users/SCII1/Desktop/aero_drone_line-detection/data/processed")
+    video_path = Path("data/input videos/video_2.avi")
+    output_dir = Path("data/experimental results")
     
     process_video(video_path, output_dir)

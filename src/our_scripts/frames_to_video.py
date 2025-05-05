@@ -2,8 +2,8 @@ import cv2
 import os
 
 # Folder containing frames
-frames_folder = "/Users/macbookpro/Desktop/aero_drone_line detection/data/alexey's_data/processed/contours"
-output_video_path = "/Users/macbookpro/Desktop/aero_drone_line detection/data/alexey's_data/processed/frame2video/combined_video_4.mp4"
+frames_folder = "data/experimental results/contours"
+output_video_path = "data/experimental results/videos_results/results_otus_1.mp4"
 
 # Get list of frame file names and sort them
 frames = sorted([f for f in os.listdir(frames_folder) if f.endswith(('.png', '.jpg', '.jpeg'))])
