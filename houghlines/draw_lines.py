@@ -2,9 +2,9 @@ import sys
 import math
 import cv2 as cv
 import numpy as np
-def main(argv):
+def main(argv) -> int:
     
-    default_file = 'C:/Users/SCII1/Desktop/aero_drone_line-detection/data/processed/frames/frame_0000.png'
+    default_file = 'data/processed/frames/frame_0000.png' # BAD DELETE
     filename = argv[0] if len(argv) > 0 else default_file
     # Loads an image
     src = cv.imread(cv.samples.findFile(filename), cv.IMREAD_GRAYSCALE)
