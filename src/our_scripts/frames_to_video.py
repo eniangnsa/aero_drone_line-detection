@@ -2,8 +2,8 @@ import cv2
 import os
 
 # Folder containing frames
-frames_folder = "data/experimental results/contour_approximation/contours"
-output_video_path = "data/experimental results/contour_approximation/contour_approx_videos/cnt_approx_5_otus_filter.mp4"
+frames_folder = "some videos"
+output_video_path = "data/experimental results/contour_approximation/contour_approx_videos/some_videos.mp4"
 
 # Get list of frame file names and sort them
 frames = sorted([f for f in os.listdir(frames_folder) if f.endswith(('.png', '.jpg', '.jpeg'))])

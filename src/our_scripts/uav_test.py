@@ -101,7 +101,7 @@ def detect(image):
 
 if __name__ == "__main__":
 
-    video_path = 'data/video_1.avi'  # Replace with your video file path
+    video_path = 'data/input videos/video_2.avi'  # Replace with your video file path
 
     video_loader = VideoLoader(video_path)
 
